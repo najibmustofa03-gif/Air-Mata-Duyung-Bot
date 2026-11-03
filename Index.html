@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Mata Duyung - Pemesanan Air Minum</title>
+    <!-- Script Telegram Web App -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Styling minimalis & modern */
+        body { font-family: sans-serif, Arial; background: #f4f6f8; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 480px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #0088cc; }
+        .product-card { border: 1px solid #ddd; padding: 12px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        button { background: #0088cc; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #006699; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>💧 Air Mata Duyung</h2>
+        <p id="user-greeting" style="text-align: center; font-size: 14px; color: #666;"></p>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
+        <h3>Katalog Produk</h3>
+        <div id="product-list">
+            <!-- Daftar produk dimuat dinamis atau statis -->
+            <div class="product-card">
+                <div>
+                    <strong>Galon Cleo 12,8L</strong><br>
+                    <small>Rp 20.000</small>
+                </div>
+                <button onclick="addToCart('Galon Cleo 12,8L', 20000)">Pilih</button>
+            </div>
+        </div>
+
+        <h3>Formulir Pemesanan</h3>
+        <form id="order-form" onsubmit="submitOrder(event)">
+            <label>Nama / Alamat Pengiriman:</label>
+            <input type="text" id="customer_info" placeholder="Contoh: Bpk. Budi - Jl. Mawar No. 5" required>
+            
+            <label>Catatan Pesanan (Multi-Produk dipisah titik koma ;):</label>
+            <input type="text" id="order_items" placeholder="Contoh: Galon Cleo 12,8L; Gas 3kg" required readonly>
+
+            <button type="submit" style="width: 100%; background: #28a745;">Kirim Pesanan</button>
+        </form>
+    </div>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        // Ganti URL ini dengan URL Web App Google Apps Script milikmu
+        const GAS_API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+        // =======================================================
+
+        // Integrasi Telegram WebApp untuk mendeteksi profil user otomatis
+        window.Telegram.WebApp.ready();
+        const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+        
+        if (tgUser) {
+            document.getElementById('user-greeting').innerText = `Halo, ${tgUser.first_name || 'Pelanggan'}! Selamat berbelanja.`;
+        } else {
+            document.getElementById('user-greeting').innerText = "Selamat berbelanja di Depot Air Mata Duyung!";
+        }
+
+        let cart = [];
+
+        function addToCart(productName, price) {
+            cart.push(productName);
+            document.getElementById('order_items').value = cart.join("; ");
+            alert(`${productName} ditambahkan ke keranjang!`);
+        }
+
+        function submitOrder(event) {
+            event.preventDefault();
+            const customerInfo = document.getElementById('customer_info').value;
+            const items = document.getElementById('order_items').value;
+
+            if (!items) {
+                alert("Keranjang masih kosong!");
+                return;
+            }
+
+            const payload = {
+                action: "createNewOrder",
+                customerName: customerInfo,
+                items: items,
+                telegramId: tgUser ? tgUser.id : "WebUser"
+            };
+
+            fetch(GAS_API_URL, {
+                method: "POST",
+                mode: "no-cors", // Sesuaikan jika menggunakan GAS web app standar
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                alert("Pesanan berhasil dikirim!");
+                document.getElementById('order-form').reset();
+                cart = [];
+            }).catch(err => {
+                alert("Gagal mengirim pesanan: " + err);
+            });
+        }
+    </script>
+</body>
+</html>
