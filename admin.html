@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Mata Duyung - Admin Dashboard</title>
+    <style>
+        body { font-family: sans-serif, Arial; background: #f4f6f8; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        .card { background: #fff; border: 1px solid #ddd; padding: 15px; margin-bottom: 12px; border-radius: 8px; }
+        button { background: #d9534f; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #c9302c; }
+        input { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        #dashboard-content { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🔒 Admin Dashboard</h2>
+
+        <!-- Form Autentikasi PIN -->
+        <div id="auth-section">
+            <p>Masukkan PIN Admin untuk mengakses dasbor operasional:</p>
+            <input type="password" id="admin-pin" placeholder="Masukkan PIN (contoh: 1234)">
+            <button onclick="verifyPin()" style="width: 100%; background: #0275d8;">Masuk</button>
+        </div>
+
+        <!-- Konten Dashboard Utama -->
+        <div id="dashboard-content">
+            <h3>📊 Ringkasan Operasional</h3>
+            <div class="card">
+                <p><strong>Status Sistem:</strong> <span style="color: green;">Online (Connected)</span></p>
+                <p><strong>Total Pesanan Hari Ini:</strong> <span id="total-orders">-</span></p>
+            </div>
+
+            <h3>📦 Kontrol Stok & Pesanan Masuk</h3>
+            <div id="orders-container">
+                <p>Memuat data pesanan...</p>
+            </div>
+            
+            <button onclick="logout()" style="width: 100%; margin-top: 15px; background: #6c757d;">Keluar</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        const GAS_API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+        const ADMIN_PIN_DEFAULT = "1234"; // Ganti dengan placeholder/default aman
+        // =======================================================
+
+        function verifyPin() {
+            const enteredPin = document.getElementById('admin-pin').value;
+            if (enteredPin === ADMIN_PIN_DEFAULT) {
+                document.getElementById('auth-section').style.display = 'none';
+                document.getElementById('dashboard-content').style.display = 'block';
+                loadDashboardData();
+            } else {
+                alert("PIN Salah!");
+            }
+        }
+
+        function loadDashboardData() {
+            // Contoh fetch data ringkasan dari Google Sheets via GAS API
+            fetch(`${GAS_API_URL}?action=getAdminData`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('total-orders').innerText = data.totalOrders || 0;
+                    // Render daftar pesanan di sini...
+                })
+                .catch(err => {
+                    console.error("Gagal memuat data:", err);
+                    document.getElementById('orders-container').innerHTML = "<p>Gagal memuat data dari server.</p>";
+                });
+        }
+
+        function logout() {
+            document.getElementById('dashboard-content').style.display = 'none';
+            document.getElementById('auth-section').style.display = 'block';
+            document.getElementById('admin-pin').value = '';
+        }
+    </script>
+</body>
+</html>
